@@ -1,0 +1,29 @@
+----------------------------------------------------------------
+Tue Oct 22 15:45:44 COT 2024:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.16.1.1 - (1901046): instance a816c00e-0192-b5fa-7a39-000001ebc8c8 
+on database directory memory:C:\Users\usuario\Documents\NetBeansProjects\proyectoVotos\372398b9-4d61-42cb-803e-1ff7f1be5aab with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@70dea4e 
+Loaded from file:/C:/Users/usuario/.m2/repository/org/apache/derby/derby/10.16.1.1/derby-10.16.1.1.jar
+java.vendor=Oracle Corporation
+java.runtime.version=21.0.4+8-LTS-274
+user.dir=C:\Users\usuario\Documents\NetBeansProjects\proyectoVotos
+os.name=Windows 11
+os.arch=amd64
+os.version=10.0
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''
+----------------------------------------------------------------
+Tue Oct 22 16:00:16 COT 2024:
+Shutting down instance a816c00e-0192-b5fa-7a39-000001ebc8c8 on database directory memory:C:\Users\usuario\Documents\NetBeansProjects\proyectoVotos\372398b9-4d61-42cb-803e-1ff7f1be5aab with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@70dea4e 
+----------------------------------------------------------------
+Tue Oct 22 16:08:47 COT 2024:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.16.1.1 - (1901046): instance 59e70108-0192-b5fa-7a39-000001ebc8c8 
+on database directory memory:C:\Users\usuario\Documents\NetBeansProjects\proyectoVotos\998fc29b-329c-4cff-9174-b7361b43e947 with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@70dea4e 
+Loaded from file:/C:/Users/usuario/.m2/repository/org/apache/derby/derby/10.16.1.1/derby-10.16.1.1.jar
+java.vendor=Oracle Corporation
+java.runtime.version=21.0.4+8-LTS-274
+user.dir=C:\Users\usuario\Documents\NetBeansProjects\proyectoVotos
+os.name=Windows 11
+os.arch=amd64
+os.version=10.0
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''
