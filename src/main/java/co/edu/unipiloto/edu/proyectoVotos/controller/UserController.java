@@ -34,19 +34,10 @@ public class UserController {
     @PostMapping("/registrarCiudadano")
     public User registrarCiudadano(@RequestBody User user) {
         Integer codigoderol = user.getRol().getCodigoderol();
+        Rol rolExistente = rolRepository.findByCodigoderol(codigoderol)
+                .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
 
-        // Verifica si ya existe un rol con el mismo codigoderol
-        if (rolRepository.findByCodigoderol(codigoderol).isPresent()) {
-            throw new RuntimeException("Ya se creó ese código de rol"); // Mensaje de error
-        }
-
-        // Si no existe, se guarda el nuevo rol
-        Rol nuevoRol = new Rol();
-        nuevoRol.setCodigoderol(codigoderol);
-        // Aquí puedes establecer otros atributos del rol si es necesario
-
-        rolRepository.save(nuevoRol); // Guarda el nuevo rol
-        user.setRol(nuevoRol); // Asigna el rol al usuario
+        user.setRol(rolExistente);
 
         return userRepository.save(user);
     }
