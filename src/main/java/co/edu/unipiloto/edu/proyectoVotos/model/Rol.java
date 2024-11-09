@@ -10,7 +10,7 @@ import lombok.*;
 
 @Entity(name="ROL")
 @Data
-@AllArgsConstructor
+@AllArgsConstructor 
 @NoArgsConstructor
 public class Rol {
     @Id

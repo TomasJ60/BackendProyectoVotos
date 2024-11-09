@@ -50,7 +50,7 @@ public class TipoController {
     }
     
     
-    //hacer llave foranea a la tabla proyectos al campo tiposdeproyectos
+    
     
     
     

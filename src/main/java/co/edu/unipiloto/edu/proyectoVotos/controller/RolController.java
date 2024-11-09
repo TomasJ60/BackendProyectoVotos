@@ -46,8 +46,4 @@ public class RolController {
         rolRepository.deleteById(id);
         return "Rol eliminado exitosamente";
     }
-
-    //mandar el rol al usuario
-    
-
 }

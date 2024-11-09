@@ -32,10 +32,9 @@ public class User {
     private String localidad;
     private String direccion;
 
-    @Enumerated(EnumType.STRING)
-    private VotoEnum voto; 
-    
     private Boolean activo;
+    
+    private String genero;
     
     @ManyToOne
     @JoinColumn(name = "codigoderol", referencedColumnName = "codigoderol")

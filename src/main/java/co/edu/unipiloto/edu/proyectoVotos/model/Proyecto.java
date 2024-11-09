@@ -36,8 +36,6 @@ public class Proyecto {
     @ManyToOne
     @JoinColumn(name = "proceso_votacion_id", referencedColumnName = "identificador") 
     private Procesodevotacion procesodevotacion;
-
-    
     
     private String localidad;
     private String presupuesto;
