@@ -46,4 +46,16 @@ public class Proyecto {
     private int votosSi;
     private int votosNo;
     private int votosBlanco;
+    
+    public String getEstadoVotacion() {
+        if (procesodevotacion != null) {
+            return procesodevotacion.getEstado();
+        }
+        return "Estado desconocido"; 
+    }
+    
+    public Integer getIdentificador(){
+        return identificador;
+    }
+    
 }

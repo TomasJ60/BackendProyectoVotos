@@ -12,68 +12,132 @@ import org.springframework.web.bind.annotation.*;
  *
  * @author tomas
  */
+@RestController
+@RequestMapping("/decisor")
 public class DecisorController {
-    
+
     @Autowired
     private ProyectoRepository proyectoRepository;
 
     @Autowired
     private UserRepository userRepository;
 
-//    @Autowired
-//    private VotoRepository votoRepository;
+    @Autowired
+    private VotoRepository votoRepository;
 
-//    @Autowired
-//    private TipoRepository tipoRepository;
-
-//    @Autowired
-//    private ProcesoRepository procesoRepository;
-    
-    @GetMapping("/filtrarProyectosPorLocalidad")
-    public List<Proyecto> filtrarProyectosPorLocalidad(@RequestParam String localidad) {
-        return proyectoRepository.findByLocalidad(localidad);
+    private boolean esDecisor(User user) {
+        return user.getRol().getDescripcion().equalsIgnoreCase("decisor");
     }
 
-    //"Decisor" - Ver el número total de votos por localidad
-    // Método para el Decisor: Obtener total de votos por localidad
-    @GetMapping("/totalVotosPorLocalidad")
-    public ResponseEntity<?> totalVotosPorLocalidad(@RequestParam Integer decisorId) {
+    // Método para verificar los proyectos ganadores por localidad
+    @GetMapping("/proyectoGanadorPorLocalidad/{idusuario}")
+    public ResponseEntity<?> proyectoGanadorPorLocalidad(@PathVariable("idusuario") Integer decisorId) {
         User decisor = userRepository.findById(decisorId)
                 .orElseThrow(() -> new RuntimeException("Decisor no encontrado"));
 
-        if (!decisor.getRol().getDescripcion().equalsIgnoreCase("decisor")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Solo los decisores pueden ver los resultados.");
+        if (!esDecisor(decisor)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Usted no es un decisor, su rol es " + decisor.getRol().getDescripcion() + ".");
         }
 
-        // Lógica para calcular total de votos por localidad
+        Map<String, Proyecto> ganadorPorLocalidad = new HashMap<>();
+        for (Proyecto proyecto : proyectoRepository.findAll()) {
+            // Verifica si el estado del proyecto es 'cerrado'
+            if (!proyecto.getEstadoVotacion().equalsIgnoreCase("cerrado")) {
+                continue;
+            }
+
+            if (!ganadorPorLocalidad.containsKey(proyecto.getLocalidad())
+                    || proyecto.getVotosSi() > ganadorPorLocalidad.get(proyecto.getLocalidad()).getVotosSi()) {
+                ganadorPorLocalidad.put(proyecto.getLocalidad(), proyecto);
+            }
+        }
+
+        if (ganadorPorLocalidad.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("No hay proyectos cerrados para mostrar.");
+        }
+
+        return ResponseEntity.ok(ganadorPorLocalidad);
+    }
+
+    // Método para obtener el total de votos por localidad
+    @GetMapping("/totalVotosPorLocalidad/{idusuario}")
+    public ResponseEntity<?> totalVotosPorLocalidad(@PathVariable("idusuario") Integer decisorId) {
+        User decisor = userRepository.findById(decisorId)
+                .orElseThrow(() -> new RuntimeException("Decisor no encontrado"));
+
+        if (!esDecisor(decisor)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Usted no es un decisor, su rol es " + decisor.getRol().getDescripcion() + ".");
+        }
+
         Map<String, Integer> votosPorLocalidad = new HashMap<>();
         for (Proyecto proyecto : proyectoRepository.findAll()) {
+            if (!proyecto.getEstadoVotacion().equalsIgnoreCase("cerrado")) {
+                continue;  // Solo contar proyectos cerrados
+            }
             votosPorLocalidad.put(proyecto.getLocalidad(),
-                    votosPorLocalidad.getOrDefault(proyecto.getLocalidad(), 0) + proyecto.getVotosSi());
+                    votosPorLocalidad.getOrDefault(proyecto.getLocalidad(), 0)
+                    + proyecto.getVotosSi() + proyecto.getVotosNo() + proyecto.getVotosBlanco());
         }
 
         return ResponseEntity.ok(votosPorLocalidad);
     }
 
-    //Rol decisor
-    // Método para el Decisor: Consultar votos en proyectos de una localidad específica
-    @GetMapping("/consultarVotos")
-    public ResponseEntity<?> consultarVotos(@RequestParam Integer decisorId, @RequestParam String localidad) {
+    // Método para obtener los votos por proyecto y localidad
+    @GetMapping("/votosPorProyectoLocalidad/{idusuario}/{idproyecto}/{localidad}")
+    public ResponseEntity<?> votosPorProyectoLocalidad(
+            @PathVariable("idusuario") Integer decisorId,
+            @PathVariable("idproyecto") Integer proyectoId,
+            @PathVariable("localidad") String localidad) {
+
         User decisor = userRepository.findById(decisorId)
                 .orElseThrow(() -> new RuntimeException("Decisor no encontrado"));
-        String rolDescripcion = decisor.getRol().getDescripcion();
 
-        if (!proyectoRepository.tienePermiso(rolDescripcion, "consultarVotos")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("Tu rol es " + rolDescripcion + ". Solo los decisores pueden consultar los votos.");
+        if (!esDecisor(decisor)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Usted no es un decisor, su rol es " + decisor.getRol().getDescripcion() + ".");
         }
 
-        List<Proyecto> proyectos = proyectoRepository.findByLocalidad(localidad).stream()
-                .sorted((p1, p2) -> Integer.compare(p2.getVotosSi(), p1.getVotosSi()))
-                .collect(Collectors.toList());
+        Proyecto proyecto = proyectoRepository.findByIdAndLocalidad(proyectoId, localidad)
+                .orElseThrow(() -> new RuntimeException("Proyecto no encontrado en la localidad especificada."));
 
-        return ResponseEntity.ok(proyectos);
+        // Verifica si el estado de votación es "cerrado"
+        if (!proyecto.getEstadoVotacion().equalsIgnoreCase("cerrado")) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Los proyectos aún continúan en espera o estado activado, por favor espere.");
+        }
+
+        Map<String, Integer> votos = new HashMap<>();
+        votos.put("SI", proyecto.getVotosSi());
+        votos.put("NO", proyecto.getVotosNo());
+        votos.put("BLANCO", proyecto.getVotosBlanco());
+
+        Map<String, Map<String, Integer>> votosPorProyecto = new HashMap<>();
+        votosPorProyecto.put(proyecto.getNombreProyecto(), votos);
+
+        return ResponseEntity.ok(votosPorProyecto);
     }
-    
-    
+
+    @GetMapping("/discriminacionVotosPorGenero/{idusuario}/{genero}")
+    public ResponseEntity<?> discriminacionVotosPorGenero(@PathVariable("idusuario") Integer decisorId, @PathVariable("genero") String genero) {
+        User decisor = userRepository.findById(decisorId)
+                .orElseThrow(() -> new RuntimeException("Decisor no encontrado"));
+
+        if (!esDecisor(decisor)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Usted no es un decisor, su rol es " + decisor.getRol().getDescripcion() + ".");
+        }
+
+        // Filtra los votos por el género especificado, solo si el proyecto está cerrado
+        Map<String, Long> votosPorGenero = votoRepository.findAll().stream()
+                .filter(voto -> voto.getProyecto().getEstadoVotacion().equalsIgnoreCase("cerrado")
+                && voto.getCiudadano().getGenero().equalsIgnoreCase(genero))
+                .collect(Collectors.groupingBy(
+                        voto -> voto.getCiudadano().getGenero(),
+                        Collectors.counting()
+                ));
+
+        if (votosPorGenero.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Los proyectos aun continúan en espera o estado activado, por favor espere.");
+        }
+
+        return ResponseEntity.ok(votosPorGenero);
+    }
+
 }

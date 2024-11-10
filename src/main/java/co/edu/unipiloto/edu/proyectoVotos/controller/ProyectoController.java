@@ -41,12 +41,16 @@ public class ProyectoController {
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         String rolDescripcion = usuario.getRol().getDescripcion();
-
+        
+        
         if (!rolDescripcion.equalsIgnoreCase("planeador")) {
-            // Mensaje personalizado cuando el rol no es "planeador"
             String mensaje = "Usted no es un planeador, usted es " + rolDescripcion;
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new ErrorResponse(mensaje));
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(mensaje));
+        }
+
+        // Verificar si el identificador ya está en uso
+        if (proyectoRepository.identificadorEnUso(proyecto.getIdentificador())) {
+            return ResponseEntity.badRequest().body("Identificador de proyecto ya en uso");
         }
 
         Procesodevotacion proceso = procesoRepository.findByIdentificador(proyecto.getProcesodevotacion().getIdentificador())

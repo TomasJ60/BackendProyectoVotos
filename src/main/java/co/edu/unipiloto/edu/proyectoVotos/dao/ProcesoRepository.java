@@ -13,5 +13,6 @@ public interface ProcesoRepository extends CrudRepository<Procesodevotacion, Int
     List<Procesodevotacion> findAll();
     Optional<Procesodevotacion> findByIdentificador(Integer identificador);
     boolean existsByIdentificador(Integer identificador); 
+    
 }
 

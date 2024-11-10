@@ -39,4 +39,9 @@ public class User {
     @ManyToOne
     @JoinColumn(name = "codigoderol", referencedColumnName = "codigoderol")
     private Rol rol;
+    
+    
+    public boolean isActivo() {
+        return activo;
+    }
 }
